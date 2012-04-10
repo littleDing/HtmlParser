@@ -15,7 +15,7 @@ HtmlParser.o : HtmlParser.cpp HtmlParser.hpp
 	g++ $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 test : sentence_cnt
-	-./sentence_cnt 
+	-./sentence_cnt < input
 
 clean :
 	-rm *.o

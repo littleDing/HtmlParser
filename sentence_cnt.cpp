@@ -37,15 +37,6 @@ int main(){
 		html+=" ";
 	}
 	HtmlParser parser;
-	queue<string> qqq;
-	parser.split(html,qqq);
-	while(!qqq.empty()){
-		cerr<<qqq.front()<<endl;
-		qqq.pop();
-	}
-	return 0;
-	
-	
 	HtmlNode *node = parser.parse(html);
 	Begin begin;
 	EndVisitorExample end;

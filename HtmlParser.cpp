@@ -26,6 +26,8 @@ void HtmlNode::addSon(HtmlNode *son){
 	//std::cerr<<__FUNCTION__<<" "<<*this<<" "<<*son<<endl;
     this->sons.push_back(son);
     son->depth=this->depth+1;
+    if(this->type==HtmlNodeTypeComment) son->type=this->type;
+    if(this->type==HtmlNodeTypeScript) son->type=this->type;
 }
 
 std::ostream& operator << (std::ostream& fout,HtmlNode& node){
@@ -90,13 +92,12 @@ HtmlNode* HtmlParser::parse(const string &htmlString){
         if(!state.empty()){
             current=state.top();
         }
-        std::cerr<<current<<" "<<current->tag<<" "<<tmp<<endl;
         HtmlNode *node=NULL;
         if(tmp[0]=='<'){
             if(tmp.substr(0,4)=="<!--"){
                 //comment
                 node=HtmlNodePool.construct();
-                node->type=HtmlNodeTypeComment;
+                node->type=HtmlNodeTypeComment; 
                 if(current) {
                     current->addSon(node);
                 }
@@ -160,13 +161,18 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
     while(sin>>tmp){
         tmp+=" ";
         while(tmp.length()){
+        	size_t spos=tmp.find("\"");
             switch (st) {
                 case splitStateLeft:{    //looking for <
                     size_t pos=tmp.find("<");
                     if(pos==tmp.npos){
-                        atag+=tmp; tmp="";
+                    	if(spos==tmp.npos){
+                        	atag+=tmp; tmp="";
+                        }else{
+                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            lastSt=st;   st=splitStateInString;  
+                        }
                     }else{
-                        size_t spos=tmp.find("\"");
                         if(spos<pos){
                             atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
                             lastSt=st;   st=splitStateInString;   
@@ -183,7 +189,12 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                 }case splitStateRight:{   //looking for >
                     size_t pos=tmp.find(">");
                     if(pos==tmp.npos){
-                        atag+=tmp; tmp="";
+                        if(spos==tmp.npos){
+                        	atag+=tmp; tmp="";
+                        }else{
+                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            lastSt=st;   st=splitStateInString;  
+                        }
                     }else{
                         size_t spos=tmp.find("\"");
                         if(spos<pos){
@@ -203,7 +214,12 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                 }case splitStateInString:{   //inside string
                     size_t pos=tmp.find("\"");
                     if(pos==tmp.npos){
-                        atag+=tmp; tmp="";
+                        if(spos==tmp.npos){
+                        	atag+=tmp; tmp="";
+                        }else{
+                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            lastSt=st;   st=splitStateInString;  
+                        }
                     }else{
                         atag+=tmp.substr(0,pos+1); tmp=tmp.substr(pos+1);
                         st=lastSt;  lastSt=splitStateNotDefine;
@@ -212,7 +228,12 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                 }case splitStateInScript:{   //inside script
                     size_t pos=tmp.find("</script>");
                     if(pos==tmp.npos){
-                        atag+=tmp; tmp="";
+                        if(spos==tmp.npos){
+                        	atag+=tmp; tmp="";
+                        }else{
+                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            lastSt=st;   st=splitStateInString;  
+                        }
                     }else{
                         atag+=tmp.substr(0,pos); tmp=tmp.substr(pos);
                         _tags.push(atag); atag="";

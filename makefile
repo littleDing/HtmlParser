@@ -1,11 +1,14 @@
 BOOST = /home/dingweijie/IDE/boost_1_49_0/
 INCLUDE = -I$(BOOST) 
 CFLAGS = -g -std=c++0x 
-TARGETS = libhtmlparser.a sentence_cnt
+TARGETS = libhtmlparser.a sentence_counter link_extractor
 
 output : $(TARGETS)
 
-sentence_cnt :	 sentence_cnt.cpp libhtmlparser.a
+sentence_counter :	 sentence_counter.cpp libhtmlparser.a
+	g++ $(CFLAGS) -o $@ $^
+	
+link_extractor :	 link_extractor.cpp libhtmlparser.a
 	g++ $(CFLAGS) -o $@ $^
 
 libhtmlparser.a : HtmlParser.o
@@ -14,8 +17,10 @@ libhtmlparser.a : HtmlParser.o
 HtmlParser.o : HtmlParser.cpp HtmlParser.hpp
 	g++ $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
-test : sentence_cnt
-	-./sentence_cnt < input
+test : link_extractor
+	-date +%s
+	-./link_extractor -b -haha -abcde -e haha >/dev/null < input
+	-date +%s
 
 clean :
 	-rm *.o

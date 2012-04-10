@@ -18,9 +18,8 @@ HtmlParser.o : HtmlParser.cpp HtmlParser.hpp
 	g++ $(CFLAGS) -c $(INCLUDE) -o $@ $<
 
 test : link_extractor
-	-date +%s
-	-./link_extractor -b -haha -abcde -e haha >/dev/null < input
-	-date +%s
+	-./link_extractor -b www.baidu.com < input
+	
 
 clean :
 	-rm *.o

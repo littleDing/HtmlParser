@@ -1,0 +1,5 @@
+<tag1 haha="hello">
+	tag1 text
+	<tag2 class="hello world">tag2 text</tag2>
+	<tag3 class="tag3"></tag3>
+</tag1>

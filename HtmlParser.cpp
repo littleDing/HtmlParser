@@ -154,6 +154,7 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
         ,splitStateInString
         ,splitStateInScript
         ,splitStateTag
+		,splitStateInCommit
         ,splitStateNotDefine
     };
     string tmp;
@@ -166,7 +167,30 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
         while(tmp.length()){
         	size_t spos=tmp.find("\"");
             switch (st) {
-                case splitStateLeft:{    //looking for <
+				case splitStateInCommit:{  //looking for  -->
+					size_t pos=tmp.find("-->");						
+					if(pos==tmp.npos){
+						if(spos==tmp.npos){
+                             atag+=tmp; tmp="";
+                        }else{
+                            getPrefix(tmp,atag,spos+1); //atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            lastSt=st;   st=splitStateInString;  
+                        }   	
+					}else{
+						if(spos<pos){
+                            getPrefix(tmp,atag,spos+1);//atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            lastSt=st;   st=splitStateInString;
+                        }else{
+                            getPrefix(tmp,atag,pos+3);//atag+=tmp.substr(0,pos); tmp=tmp.substr(pos);
+                            removeBlanks(atag);
+                            if(atag.length()){
+                                _tags.push(atag); atag="";
+                            }
+                            st=splitStateLeft;
+                        }	
+					}
+					break;
+				}case splitStateLeft:{    //looking for <
                     size_t pos=tmp.find("<");
                     if(pos==tmp.npos){
                     	if(spos==tmp.npos){
@@ -245,15 +269,21 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                     }
                     break;
                 }case splitStateTag:{   //just after <
-                    size_t pos=tmp.find(">");
-                    if(pos==tmp.npos){
-                        lastTag=tmp;    atag+=tmp; tmp="";
-                        st=splitStateRight;
-                        removeBlanks(lastTag);
-                    }else{
-                        lastTag=tmp.substr(0,pos);    atag+=lastTag; tmp=tmp.substr(pos);
-                        st=splitStateRight;
-                    }
+                    size_t pos=tmp.find("<!--");
+					if(pos==0){
+						getPrefix(tmp,atag,4);
+						st=splitStateInCommit;
+					}else{
+						pos=tmp.find(">");
+                    	if(pos==tmp.npos){
+                    	    lastTag=tmp;    atag+=tmp; tmp="";
+                    	    st=splitStateRight;
+                    	    removeBlanks(lastTag);
+                    	}else{
+                    	    lastTag=tmp.substr(0,pos);    atag+=lastTag; tmp=tmp.substr(pos);
+                    	    st=splitStateRight;
+                    	}
+					}
                     break;
                 }default:
                     break;

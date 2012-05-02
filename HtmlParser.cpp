@@ -143,6 +143,9 @@ void removeBlanks(string& s){
 	s=s.substr(f,e-f+1);   		
 }
 
+inline void getPrefix(string& source,string& target,const int& len=0){
+	target+=source.substr(0,len); source=source.substr(len);
+}
 
 void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
     enum SplitStateEnum {
@@ -156,7 +159,7 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
     string tmp;
     std::stringstream sin(s);
     string atag;
-    SplitStateEnum st=splitStateLeft,lastSt;  //0:<   1:>  2:"   3:script 4:tag
+    SplitStateEnum st=splitStateLeft,lastSt=splitStateLeft;  //0:<   1:>  2:"   3:script 4:tag
     string lastTag;
     while(sin>>tmp){
         tmp+=" ";
@@ -169,15 +172,15 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                     	if(spos==tmp.npos){
                         	atag+=tmp; tmp="";
                         }else{
-                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                        	getPrefix(tmp,atag,spos+1); //atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
                             lastSt=st;   st=splitStateInString;  
                         }
                     }else{
                         if(spos<pos){
-                            atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            getPrefix(tmp,atag,spos+1);//atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
                             lastSt=st;   st=splitStateInString;   
                         }else{
-                            atag+=tmp.substr(0,pos); tmp=tmp.substr(pos);
+                            getPrefix(tmp,atag,pos);//atag+=tmp.substr(0,pos); tmp=tmp.substr(pos);
                             removeBlanks(atag);
                             if(atag.length()){
                                 _tags.push(atag); atag="";
@@ -192,16 +195,16 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                         if(spos==tmp.npos){
                         	atag+=tmp; tmp="";
                         }else{
-                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                        	getPrefix(tmp,atag,spos+1);//atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
                             lastSt=st;   st=splitStateInString;  
                         }
                     }else{
                         size_t spos=tmp.find("\"");
                         if(spos<pos){
-                            atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                            getPrefix(tmp,atag,spos+1);//atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
                             lastSt=st;   st=splitStateInString;
                         }else{
-                            atag+=tmp.substr(0,pos+1); tmp=tmp.substr(pos+1);
+                            getPrefix(tmp,atag,pos+1);//atag+=tmp.substr(0,pos+1); tmp=tmp.substr(pos+1);
                             _tags.push(atag); atag="";
                             if(lastTag=="<script"){
                                 st=splitStateInScript;
@@ -221,8 +224,9 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                             lastSt=st;   st=splitStateInString;  
                         }
                     }else{
-                        atag+=tmp.substr(0,pos+1); tmp=tmp.substr(pos+1);
-                        st=lastSt;  lastSt=splitStateNotDefine;
+                        getPrefix(tmp,atag,pos+1);//atag+=tmp.substr(0,pos+1); tmp=tmp.substr(pos+1);
+                        st=lastSt;  lastSt=splitStateLeft;
+						if(tmp[0]=='\"'){	tmp=tmp.substr(1);	}
                     }
                     break;
                 }case splitStateInScript:{   //inside script
@@ -231,11 +235,11 @@ void HtmlParser::split(const std::string& s,std::queue<std::string>& _tags){
                         if(spos==tmp.npos){
                         	atag+=tmp; tmp="";
                         }else{
-                        	atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
+                        	getPrefix(tmp,atag,spos+1);//atag+=tmp.substr(0,spos+1); tmp=tmp.substr(spos+1);
                             lastSt=st;   st=splitStateInString;  
                         }
                     }else{
-                        atag+=tmp.substr(0,pos); tmp=tmp.substr(pos);
+                        getPrefix(tmp,atag,pos+1);//atag+=tmp.substr(0,pos); tmp=tmp.substr(pos);
                         _tags.push(atag); atag="";
                         st=splitStateLeft;
                     }

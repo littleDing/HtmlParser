@@ -73,11 +73,6 @@ public:
 ostream& operator << (std::ostream& fout,HtmlNode& node);
 
 class HtmlParser {
-protected:
-    std::stack<HtmlNode*> state;
-    std::queue<std::string> tags;
-    std::set<std::string> singleTags;
-    std::vector< std::pair<std::string, std::string> > escapes;
 public:
     HtmlParser();
     HtmlParser(const std::vector<std::string>& _singleTags) : singleTags(_singleTags.begin(),_singleTags.end())  {
@@ -86,10 +81,16 @@ public:
     }
     HtmlParser(const std::vector<std::string>& _singleTags,const std::vector< std::pair<std::string, std::string> >& _escapes) : singleTags(_singleTags.begin(),_singleTags.end()),escapes(_escapes){
     }
-    void split(const std::string& s,std::queue<std::string>& _tags);
-    HtmlNode* getNode(const std::string& s);
 public:
     HtmlNode* parse(const string& htmlString);
+    void split(const std::string& s,std::queue<std::string>& _tags);
+    HtmlNode* getNode(const std::string& s);
+protected:
+	
+    std::stack<HtmlNode*> state;
+    std::queue<std::string> tags;
+    std::set<std::string> singleTags;
+    std::vector< std::pair<std::string, std::string> > escapes;
 };
 
 #endif

@@ -1,4 +1,4 @@
-//
+
 //  HtmlParser.cpp
 //  TestCPP
 //
@@ -93,18 +93,19 @@ HtmlNode* HtmlParser::parse(const string &htmlString){
             current=state.top();
         }
         HtmlNode *node=NULL;
+		size_t len=tmp.length();
         if(tmp[0]=='<'){
-            if(tmp.substr(0,4)=="<!--"){
+            if(len>=4&&tmp.substr(0,4)=="<!--"){
                 //comment
                 node=HtmlNodePool.construct();
                 node->type=HtmlNodeTypeComment; 
                 if(current) {
                     current->addSon(node);
                 }
-            }else if(tmp.substr(0,2)=="</"){
+            }else if(len>=2&&tmp.substr(0,2)=="</"){
                 //end node
                 state.pop(); 
-            }else if(tmp.substr(tmp.length()-2,2)=="/>"){
+            }else if(len>=2&&tmp.substr(tmp.length()-2,2)=="/>"){
                 //self end node
                 node=getNode(tmp);
                 if(current) {
